@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-http="http://www.springframework.org/schema/integration/http"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/http
+    http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+
+
+	<bean id="customObjectMapper" class="com.test.countrylist.mapper.JsonMapper"
+            factory-method="getMapper"/>
+	<!-- CHANNEL -->
+	<int:channel id="requestChannel" />
+	<int:channel id="outputChannel" />
+	
+
+	<int:json-to-object-transformer input-channel="requestChannel" type="com.test.countrylist.dto.CountryWithCurrency" object-mapper="customObjectMapper"/>
+	<int-http:inbound-gateway request-channel="requestChannel"
+		reply-channel="outputChannel" supported-methods="GET"
+		path="/countriesList">
+		
+
+		<int-http:request-mapping consumes="application/json" produces="application/json"  />
+	</int-http:inbound-gateway>
+
+	<int:service-activator ref="countriesEndPoint" method="get" input-channel="requestChannel" output-channel="outputChannel"  />
+
+</beans>
